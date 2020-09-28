@@ -1,0 +1,34 @@
+---
+# tasks file for k8s-master
+- name: Initialize cluster with kubeadm
+  command: kubeadm init --pod-network-cidr=10.196.0.0/16
+
+- name: Setup kubeconfig directory
+  file:
+    path: /home/noroot/.kube
+    state: directory
+    owner: noroot
+    group: noroot
+    mode: 0700
+
+- name: Setup kube config file
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/noroot/.kube/config
+    remote_src: yes
+    owner: noroot
+    group: noroot
+    mode: 0600
+
+- name: Setup CNI
+  command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+  become: false
+
+- name: Generate join command
+  command: kubeadm token create --print-join-command
+  register: join_command
+  become: false
+
+- name: Copy join command to local file
+  local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
+  become: false
