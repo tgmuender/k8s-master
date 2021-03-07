@@ -28,6 +28,14 @@
     group: noroot
     mode: 0600
 
+- name: Kubeconfig generator
+  ansible.builtin.template:
+    src: generateKubeconfig.sh
+    dest: /home/noroot/generateKubeconfig.sh
+    owner: noroot
+    group: noroot
+    mode: 0755
+
 - name: Setup CNI
   command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
   become: false
