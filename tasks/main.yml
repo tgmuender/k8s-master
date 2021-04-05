@@ -56,3 +56,27 @@
     owner: root
     group: root
     mode: 0600
+
+- name: Metallb namespace setup
+  command: kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.5/manifests/namespace.yaml
+  become: false
+
+- name: Metallb setup
+  command: kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.5/manifests/metallb.yaml
+  become: false
+
+- name: Metallb memberlist secret
+  command: kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
+  become: false
+
+- name: Metallb config file
+  ansible.builtin.template:
+    src: metallb-config.yaml.j2
+    dest: /home/noroot/metallb-config.yaml
+    owner: noroot
+    group: noroot
+    mode: 0644
+
+- name: Metallb config
+  command: kubectl apply -f /home/noroot/metallb-config.yaml
+  become: false
